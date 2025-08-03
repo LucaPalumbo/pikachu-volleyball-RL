@@ -4,3 +4,6 @@ analytics.html
 .firebase/
 .firebaserc
 firebase.json
+src/AI/__pycache__/
+src/AI/game/__pycache__/
+venv/

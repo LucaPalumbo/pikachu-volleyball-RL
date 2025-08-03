@@ -1,0 +1,12 @@
+FROM python:3.12
+WORKDIR /app
+
+
+COPY requirements_nonvidia.txt ./ 
+RUN pip install -r requirements_nonvidia.txt
+
+COPY src/AI/ ./src/AI/
+
+
+EXPOSE 5000
+CMD ["python3", "src/AI/webSocketServer.py"]
