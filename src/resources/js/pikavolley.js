@@ -111,6 +111,9 @@ export class PikachuVolleyball {
      * @type {GameState}
      */
     this.state = this.intro;
+
+    console.log("creating a webSocket connection...");
+    this.socket = new WebSocket("ws://localhost:5000");
   }
 
   /**
@@ -327,7 +330,7 @@ export class PikachuVolleyball {
    * Round: the players play volleyball in this game state
    * @type {GameState}
    */
-  round() {
+  async round() {
     const pressedPowerHit =
       this.keyboardArray[0].powerHit === 1 ||
       this.keyboardArray[1].powerHit === 1;
@@ -342,6 +345,75 @@ export class PikachuVolleyball {
       this.state = this.intro;
       return;
     }
+
+    const gameState = {
+        player1X: this.physics.player1.x,
+        player1Y: this.physics.player1.y,
+        player1Yvelocity: this.physics.player1.yVelocity,
+        player1State: this.physics.player1.state,
+        player1DivingDirection: this.physics.player1.divingDirection,
+        player1LyingDownDurationLeft: this.physics.player1.lyingDownDurationLeft,
+        player2X: this.physics.player2.x,
+        player2Y: this.physics.player2.y,
+        player2Yvelocity: this.physics.player2.yVelocity,
+        player2State: this.physics.player2.state,
+        player2DivingDirection: this.physics.player2.divingDirection,
+        player2LyingDownDurationLeft: this.physics.player2.lyingDownDurationLeft,
+        ballX: this.physics.ball.x,
+        ballY: this.physics.ball.y,
+        ballXvelocity: this.physics.ball.xVelocity,
+        ballYvelocity: this.physics.ball.yVelocity,
+        isPowerHit: this.physics.ball.isPowerHit,
+        player1IsComputer: this.physics.player1.isComputer,
+        player2IsComputer: this.physics.player2.isComputer,
+    };
+
+    /*
+    send gamestate as json to the websocket and read response
+    */
+    const measureResponseTime = () => {
+      return new Promise((resolve, reject) => {
+        const onMessage = (event) => {
+            try {
+                const endTime = performance.now();
+                this.socket.removeEventListener("message", onMessage);
+                const data = JSON.parse(event.data);
+                const elapsedTime = endTime - startTime;
+                console.log(`WebSocket response time: ${elapsedTime.toFixed(2)} ms`);
+                resolve(data);
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
+                reject(error);
+            }
+        };
+
+        const onError = (error) => {
+            console.error("WebSocket error:", error);
+            this.socket.removeEventListener("message", onMessage);
+            reject(error);
+        };
+
+        this.socket.addEventListener("message", onMessage);
+        this.socket.addEventListener("error", onError);
+
+        const startTime = performance.now();
+        this.socket.send(JSON.stringify(gameState));
+      });
+    };
+    if (this.physics.player1.isComputer === true || this.physics.player2.isComputer === true) {
+      const aiAction = await measureResponseTime();
+      if (this.physics.player1.isComputer === true) {
+        this.keyboardArray[0].xDirection = aiAction[1]['xDirection'];
+        this.keyboardArray[0].yDirection = aiAction[1]['yDirection'];
+        this.keyboardArray[0].powerHit = aiAction[1]['powerHit'] ? 1 : 0;
+      }
+      if (this.physics.player2.isComputer === true) {
+        this.keyboardArray[1].xDirection = aiAction[2]['xDirection'];
+        this.keyboardArray[1].yDirection = aiAction[2]['yDirection'];
+        this.keyboardArray[1].powerHit = aiAction[2]['powerHit'] ? 1 : 0;
+      }
+    }
+
 
     const isBallTouchingGround = this.physics.runEngineForNextFrame(
       this.keyboardArray
