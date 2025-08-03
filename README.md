@@ -1,3 +1,53 @@
+# Pikachu Volleyball RL
+
+A fork of Pikachu Volleyball enhanced with Reinforcement Learning capabilities. This project allows you to train an AI agent using RL techniques and play against it in the classic Pikachu Volleyball game.
+
+![AI vs AI gameplay](img/long.gif)
+> AI vs AI gameplay
+
+## Project Structure
+
+- **`src/AI/game/`** - Python implementation of the Pikachu Volleyball game environment
+- **`src/AI/environment.py`** - Gymnasium environment wrapper for RL training
+- **`src/AI/train.py`** - Training script for the RL agent
+- **`src/AI/webSocketServer.py`** - WebSocket server that receives game state and returns AI moves
+- **`src/resources/pikaVolley.js`** - Modified game file that sends state via WebSocket to the Python inference server
+
+## Getting Started
+
+### Option 1: Manual Setup
+
+1. Install Python dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+2. Install Node.js dependencies and build the game:
+```bash
+npm install
+npm run build
+npx http-server dist
+```
+
+3. In a separate terminal, start the AI server:
+```bash
+python3 src/AI/webSocketServer.py
+```
+
+4. Open your browser and navigate to the local server to play against the AI!
+
+### Option 2: Docker (Recommended)
+```bash
+docker compose up --build
+```
+
+## Features
+
+- Train your own RL agent using the provided Gymnasium environment
+- Real-time AI inference through WebSocket communication
+- Modified game interface to integrate with the AI backend
+- Play against trained AI agents or watch AI vs AI matches
+
 # Pikachu Volleyball
 
 _&check;_ _English_ | [_Korean(한국어)_](README.ko.md)
